@@ -181,6 +181,8 @@ let alphabetEncodeTable: [Int8] = ["A","B","C","D","E","F","G","H","I","J","K","
 let extendedHexAlphabetEncodeTable: [Int8] = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V"]
 
 private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [Int8]) -> String {
+    var lenght = lenght
+    
     if length == 0 {
         return ""
     }
@@ -192,8 +194,7 @@ private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [In
     var encoded = resultBuffer
 
     // encode regular blocks
-    var lengthCopy = length
-    while lengthCopy >= 5 {
+    while length >= 5 {
         encoded[0] = table[Int(bytes[0] >> 3)]
         encoded[1] = table[Int((bytes[0] & 0b00000111) << 2 | bytes[1] >> 6)]
         encoded[2] = table[Int((bytes[1] & 0b00111110) >> 1)]
@@ -202,7 +203,7 @@ private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [In
         encoded[5] = table[Int((bytes[3] & 0b01111100) >> 2)]
         encoded[6] = table[Int((bytes[3] & 0b00000011) << 3 | bytes[4] >> 5)]
         encoded[7] = table[Int((bytes[4] & 0b00011111))]
-        lengthCopy -= 5
+        length -= 5
         encoded = encoded.advancedBy(8)
         bytes = bytes.advancedBy(5)
     }
@@ -210,7 +211,7 @@ private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [In
     // encode last block
     var byte0, byte1, byte2, byte3, byte4: UInt8
     (byte0, byte1, byte2, byte3, byte4) = (0,0,0,0,0)
-    switch lengthCopy {
+    switch length {
     case 4:
         byte3 = bytes[3]
         encoded[6] = table[Int((byte3 & 0b00000011) << 3 | byte4 >> 5)]
@@ -233,7 +234,7 @@ private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [In
     }
 
     // padding
-    switch lengthCopy {
+    switch length {
     case 0:
         encoded[0] = 0
     case 1:
