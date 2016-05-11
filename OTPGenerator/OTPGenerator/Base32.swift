@@ -181,7 +181,7 @@ let alphabetEncodeTable: [Int8] = ["A","B","C","D","E","F","G","H","I","J","K","
 let extendedHexAlphabetEncodeTable: [Int8] = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V"]
 
 private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [Int8]) -> String {
-    var lenght = lenght
+    var length = length
     
     if length == 0 {
         return ""
