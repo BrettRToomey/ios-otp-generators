@@ -180,7 +180,7 @@ let alphabetEncodeTable: [Int8] = ["A","B","C","D","E","F","G","H","I","J","K","
 
 let extendedHexAlphabetEncodeTable: [Int8] = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V"]
 
-private func base32encode(data: UnsafePointer<Void>, var _ length: Int, _ table: [Int8]) -> String {
+private func base32encode(data: UnsafePointer<Void>, _ length: Int, _ table: [Int8]) -> String {
     if length == 0 {
         return ""
     }
@@ -192,7 +192,8 @@ private func base32encode(data: UnsafePointer<Void>, var _ length: Int, _ table:
     var encoded = resultBuffer
 
     // encode regular blocks
-    while length >= 5 {
+    var lengthCopy = length
+    while lengthCopy >= 5 {
         encoded[0] = table[Int(bytes[0] >> 3)]
         encoded[1] = table[Int((bytes[0] & 0b00000111) << 2 | bytes[1] >> 6)]
         encoded[2] = table[Int((bytes[1] & 0b00111110) >> 1)]
@@ -201,7 +202,7 @@ private func base32encode(data: UnsafePointer<Void>, var _ length: Int, _ table:
         encoded[5] = table[Int((bytes[3] & 0b01111100) >> 2)]
         encoded[6] = table[Int((bytes[3] & 0b00000011) << 3 | bytes[4] >> 5)]
         encoded[7] = table[Int((bytes[4] & 0b00011111))]
-        length -= 5
+        lengthCopy -= 5
         encoded = encoded.advancedBy(8)
         bytes = bytes.advancedBy(5)
     }
@@ -209,7 +210,7 @@ private func base32encode(data: UnsafePointer<Void>, var _ length: Int, _ table:
     // encode last block
     var byte0, byte1, byte2, byte3, byte4: UInt8
     (byte0, byte1, byte2, byte3, byte4) = (0,0,0,0,0)
-    switch length {
+    switch lengthCopy {
     case 4:
         byte3 = bytes[3]
         encoded[6] = table[Int((byte3 & 0b00000011) << 3 | byte4 >> 5)]
@@ -232,7 +233,7 @@ private func base32encode(data: UnsafePointer<Void>, var _ length: Int, _ table:
     }
 
     // padding
-    switch length {
+    switch lengthCopy {
     case 0:
         encoded[0] = 0
     case 1:
@@ -271,7 +272,7 @@ let alphabetDecodeTable: [UInt8] = [
     __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x00 - 0x0F
     __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x10 - 0x1F
     __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x20 - 0x2F
-    __,__,26,27, 28,29,30,31, __,__,__,__, __,__, __,__,  // 0x30 - 0x3F
+    __,__,26,27, 28,29,30,31, __,__,__,__, __,__, __,__, // 0x30 - 0x3F
     __, 0, 1, 2,  3, 4, 5, 6,  7, 8, 9,10, 11,12,13,14,  // 0x40 - 0x4F
     15,16,17,18, 19,20,21,22, 23,24,25,__, __,__,__,__,  // 0x50 - 0x5F
     __, 0, 1, 2,  3, 4, 5, 6,  7, 8, 9,10, 11,12,13,14,  // 0x60 - 0x6F
@@ -290,7 +291,7 @@ let extendedHexAlphabetDecodeTable: [UInt8] = [
     __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x00 - 0x0F
     __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x10 - 0x1F
     __,__,__,__, __,__,__,__, __,__,__,__, __,__,__,__,  // 0x20 - 0x2F
-    0, 1, 2, 3,  4, 5, 6, 7,  8, 9,__,__, __,__,__,__,  // 0x30 - 0x3F
+    0, 1, 2, 3,  4, 5, 6, 7,  8, 9,__,__, __,__,__,__,   // 0x30 - 0x3F
     __,10,11,12, 13,14,15,16, 17,18,19,20, 21,22,23,24,  // 0x40 - 0x4F
     25,26,27,28, 29,30,31,__, __,__,__,__, __,__,__,__,  // 0x50 - 0x5F
     __,10,11,12, 13,14,15,16, 17,18,19,20, 21,22,23,24,  // 0x60 - 0x6F
